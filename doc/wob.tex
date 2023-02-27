@@ -18,7 +18,7 @@
 \begin{abstract}
 Due a conflict between the OpenSees and Tcl \textit{load} commands, Tcl binary packages cannot be loaded in after \textit{model} is called. Most notably, this restricts the use of Tk widgets. 
 However, the Tcl \textit{interp} command can be used to create a fresh Tcl interpreter within the main OpenSees interpreter, and widgets can be built there instead. 
-The ``widget'' module formalizes this, allowing for creation of Tk widget objects, each with their own Tcl interpreter.
+The ``wob'' package formalizes this, allowing for creation of Tk widget objects, each with their own Tcl interpreter.
 
 Note that this package is simply a framework to build widgets with. 
 Knowledge of Tk and event-driven programming is critical to build widgets.
@@ -105,7 +105,7 @@ To exit the event loop and continue with a script, simply enter ``return'' on th
 
 \clearpage
 \section{Basic Applications}
-The example below demonstrates how the widget module can be used to create and manipulate Tk widgets.
+The example below demonstrates how the wob package can be used to create and manipulate Tk widgets.
 \begin{example}{Filename dialog}
 \begin{lstlisting}
 set widget [widget new]
