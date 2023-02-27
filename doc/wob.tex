@@ -1,0 +1,144 @@
+\documentclass{article}
+
+% Input packages & formatting
+\input{template/packages}
+\input{template/formatting}
+\renewcommand{\cleartooddpage}[1][]{\ignorespaces} % single side
+\newcommand{\caret}{$^\wedge$}
+
+% Other macros
+\renewcommand{\^}[1]{\textsuperscript{#1}}
+\renewcommand{\_}[1]{\textsubscript{#1}}
+
+\title{\Huge Tcl Widget Objects\\\small Version 0.1.0}
+\author{Alex Baker\\\small\hyperlink{https://github.com/ambaker1/wob}{https://github.com/ambaker1/wob}}
+\date{\small\today}
+\begin{document}
+\maketitle
+\begin{abstract}
+Due a conflict between the OpenSees and Tcl \textit{load} commands, Tcl binary packages cannot be loaded in after \textit{model} is called. Most notably, this restricts the use of Tk widgets. 
+However, the Tcl \textit{interp} command can be used to create a fresh Tcl interpreter within the main OpenSees interpreter, and widgets can be built there instead. 
+The ``widget'' module formalizes this, allowing for creation of Tk widget objects, each with their own Tcl interpreter.
+
+Note that this package is simply a framework to build widgets with. 
+Knowledge of Tk and event-driven programming is critical to build widgets.
+Also, although this package was developed specifically for OpenSees, it is still applicable to other Tcl applications.
+\end{abstract}
+
+\clearpage
+\section{Creating Widget Objects}
+Widget objects are created from the \cmdlink{widget} class using the standard methods \textit{new} or \textit{create}. 
+When a widget is created, it also creates a unique Tcl interpreter and loads in the Tk package, binding the ``close window'' event to destroy the widget object and interpreter.
+Once created, \cmdlink{widget} objects act as commands with an ensemble of subcommands, or methods. 
+These objects can be deleted with the method \methodlink[0]{widget}{destroy}.
+\begin{syntax}
+   	\command{widget} new <\$title> \\
+   	widget create \$objectName <\$title>
+\end{syntax}
+\begin{args}
+   	\$objectName & Explicit name for object. \\
+   	\$title & Title of main widget window (default ``Widget'').
+\end{args}
+\begin{example}{Creating a widget object}
+\begin{lstlisting}
+set widgetObj [widget new]
+\end{lstlisting}
+\end{example}
+\subsection{Removing Widget Objects}
+The standard method \methodlink[0]{widget}{destroy} removes a widget object from the main OpenSees interpreter, destroying the object, widget window, and widget interpreter.
+This is also called if the window is closed or an ``exit'' statement is evaluated in the widget interpreter.
+\begin{syntax}
+   	\method{widget}{destroy}
+\end{syntax}
+\subsection{The Widget Interpreter}
+All interfacing with the widget is done through its corresponding interpreter. 
+The widget's interpreter command can be accessed with the method \methodlink[0]{widget}{interp}, for advanced introspection. 
+\begin{syntax}
+   	\method{widget}{interp}
+\end{syntax}
+\clearpage
+\section{Building a Widget}
+The main method for building a widget is \methodlink[0]{widget}{eval}, which evaluates Tcl/Tk code within the widget interpreter. 
+The method behaves the same as the Tcl \textit{eval} command, but within the widget interpreter.
+\begin{syntax}
+   	\method{widget}{eval} \$arg1 \$arg2 ...
+\end{syntax}
+\begin{args}
+   	\$arg1 \$arg2 ... & Arguments to be concatenated into a Tcl script to evaluate.
+\end{args}
+\subsection{Widget Variable Access}
+For convenience, variable values may be passed to the widget interpreter with the method \methodlink[0]{widget}{set}, and retrieved with \methodlink[0]{widget}{get}. 
+\begin{syntax}
+   	\method{widget}{set} \$varName \$value
+\end{syntax}
+\begin{syntax}
+   	\method{widget}{get} \$varName
+\end{syntax}
+\begin{args}
+   	\$varName & Name of variable in widget interpreter. \\
+   	\$value & Value to set.
+\end{args}
+\subsection{Widget Command Aliases}
+By default, the widget interpreter does not interface directly with the main OpenSees interpreter. The method \methodlink[0]{widget}{alias} creates an alias command in the widget interpreter to access a command in the main interpreter.
+This is identical to the Tcl \textit{interp} method.
+\begin{syntax}
+   	\method{widget}{alias} \$srcCmd \$targetCmd <\$arg1 \$arg2 ...>
+\end{syntax}
+\begin{args}
+   	\$srcCmd & Command in widget interpreter (creates the command). \\
+   	\$targetCmd & Command to link to in the main interpreter (does not create the command). \\
+   	\$arg1 \$arg2 ... & Optional, prefix arguments to \texttt{\$targetCmd}.
+\end{args}
+\clearpage
+\section{Entering the Event Loop}
+In order for widget components to display and be interactive, the Tk event loop must be entered. 
+Some Tk commands automatically enter the event loop, like \textit{tk\textunderscore getOpenFile}, but for the most part, the event loop must be entered with a call to \textit{vwait}, \textit{tkwait}, or \textit{update} (it is generally bad practice to use \textit{update} though, for a variety of reasons). 
+
+The command \cmdlink{mainLoop} is provided as a method to enter the event loop for all widgets, while also taking interactive input from the command line, similar to the ``wish.exe'' Tcl/Tk program.
+To exit the event loop and continue with a script, simply enter ``return'' on the command line.
+\begin{syntax}
+   	\command{mainLoop} <\$onBlank>
+\end{syntax}
+\begin{args}
+   	\$onBlank & What to do after user enters a blank line: ``continue'' will continue the interactive event loop, and ``break'' will exit the interactive event loop. Default ``continue''.
+\end{args}
+
+\clearpage
+\section{Basic Applications}
+The example below demonstrates how the widget module can be used to create and manipulate Tk widgets.
+\begin{example}{Filename dialog}
+\begin{lstlisting}
+set widget [widget new]
+set filename [$widget eval tk_getOpenFile]
+$widget destroy
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Option selection}
+\begin{lstlisting}
+set widget [widget new]
+$widget eval {
+	label .label -text "Choose analysis type:"
+	tk_optionMenu .options AnalysisType "" Pushover Dynamic
+	pack .label -side top -fill x
+	pack .options -side bottom -fill x
+	vwait AnalysisType
+}
+puts [$widget get AnalysisType]
+$widget destroy
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Access clipboard}
+\begin{lstlisting}
+set widget [widget new]
+$widget set text "hello world"
+$widget eval {
+	clipboard clear
+	clipboard append $text
+}
+$widget destroy
+\end{lstlisting}
+\end{example}
+
+\end{document}
