@@ -111,6 +111,7 @@ The example below demonstrates how the wob package can be used to create and man
 set widget [widget new]
 set filename [$widget eval tk_getOpenFile]
 $widget destroy
+puts $filename
 \end{lstlisting}
 \end{example}
 
@@ -137,6 +138,7 @@ $widget eval {
 	clipboard clear
 	clipboard append $text
 }
+mainLoop
 # now the text "hello world" can be pasted into another application.
 \end{lstlisting}
 \end{example}
