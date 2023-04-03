@@ -4,7 +4,7 @@
  Create widgets with their own Tcl object and their own interpreter. 
  
 ## Installation
-Wob is a Tin package. Tin makes installing Tcl packages easy, and is available [here]{https://github.com/ambaker1/Tin}.
+Wob is a Tin package. Tin makes installing Tcl packages easy, and is available [here](https://github.com/ambaker1/Tin).
 After installing Tin, simply include the following in your script to install wob:
 ```tcl
 package require tin
