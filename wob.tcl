@@ -178,4 +178,4 @@ oo::class create ::wob::widget {
 }
 
 # Finally, provide the package
-package provide wob 0.1.1
+package provide wob 0.1.2

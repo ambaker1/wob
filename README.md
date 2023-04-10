@@ -1,16 +1,15 @@
-# wob.tcl
- Widget Objects in Tcl
- 
- Create widgets with their own Tcl object and their own interpreter.
+# wob: Tcl Widget Objects
+
+Create widgets with their own Tcl object and their own interpreter.
 
 Full documentation [here](doc/wob.pdf).
  
 ## Installation
-This package is a Tin package. Tin makes installing Tcl packages easy, and is available [here](https://github.com/ambaker1/Tin).
+This package is a Tin package. 
+Tin makes installing Tcl packages easy, and is available [here](https://github.com/ambaker1/Tin).
 
-After installing Tin, either download the latest release and run "pkgInstall.tcl", or simply run the following Tcl code to install wob:
+After installing/upgrading Tin, simply run the following Tcl code to install the most recent version of "wob":
 ```tcl
 package require tin
-tin add wob https://github.com/ambaker1/wob
 tin install wob
 ```
