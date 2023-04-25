@@ -10,8 +10,7 @@ Tin makes installing Tcl packages easy, and is available [here](https://github.c
 
 After installing Tin, simply run the following Tcl code to install the most recent version of "wob":
 ```tcl
-package require tin 0.4
-tin add -auto wob https://github.com/ambaker1/wob install.tcl 0.1.3-
+package require tin 0.4.1
 tin fetch wob
 tin install wob
 ```
