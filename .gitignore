@@ -1,4 +1,4 @@
-releases/**
+build/**
 doc/**
 !doc/wob.tex
 !doc/wob.pdf

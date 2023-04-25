@@ -3,6 +3,7 @@
 % Input packages & formatting
 \input{template/packages}
 \input{template/formatting}
+\input{template/version}
 \renewcommand{\cleartooddpage}[1][]{\ignorespaces} % single side
 \newcommand{\caret}{$^\wedge$}
 
@@ -10,8 +11,8 @@
 \renewcommand{\^}[1]{\textsuperscript{#1}}
 \renewcommand{\_}[1]{\textsubscript{#1}}
 
-\title{\Huge Tcl Widget Objects\\\small Version 0.1}
-\author{Alex Baker\\\small\hyperlink{https://github.com/ambaker1/wob}{https://github.com/ambaker1/wob}}
+\title{\Huge Tcl Widget Objects\\\small Version \version}
+\author{Alex Baker\\\small\url{https://github.com/ambaker1/wob}}
 \date{\small\today}
 \begin{document}
 \maketitle
