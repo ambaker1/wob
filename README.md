@@ -2,7 +2,7 @@
 
 Create widgets with their own Tcl object and their own interpreter.
 
-Full documentation [here](doc/wob.pdf).
+Full documentation [here](https://raw.githubusercontent.com/ambaker1/wob/main/doc/wob.pdf).
  
 ## Installation
 This package is a Tin package. 
