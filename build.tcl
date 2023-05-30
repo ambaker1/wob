@@ -64,8 +64,8 @@ test exitMainLoop_2 {
     set result
 } -result {foo bar}
 
-test widget_vlink_write {
-    # Test variable links
+test widget_vlink_write_ss {
+    # write variable (scalar to scalar link)
 } -body {
     set widget [widget new]
     $widget vlink x x
@@ -73,22 +73,22 @@ test widget_vlink_write {
     $widget get x
 } -result {10}
 
-test widget_vlink_read {
-    # Test variable links
+test widget_vlink_read_ss {
+    # read variable (scalar to scalar link)
 } -body {
     $widget set x 5
     set x
 } -result {5}
 
-test widget_vlink_unset_1 {
-    # Test variable links
+test widget_vlink_unset_ss1 {
+    # unset variable (scalar to scalar link) (from parent)
 } -body {
     unset x
     $widget eval info exists x
 } -result {0}
 
-test widget_vlink_unset_2 {
-    # Test variable links
+test widget_vlink_unset_ss2 {
+    # unset variable (scalar to scalar link) (from widget)
 } -body {
     $widget vlink x x
     set x 5
@@ -96,7 +96,75 @@ test widget_vlink_unset_2 {
     info exists x
 } -result {0}
 
+test widget_vlink_write_sa {
+    # write variable (scalar to array element link)
+} -body {
+    $widget vlink foo x(1)
+    $widget vlink bar x(2)
+    set foo "hello "
+    set bar "world"
+    $widget eval {string cat $x(1) $x(2)}
+} -result {hello world}
 
+test widget_vlink_read_sa {
+    # read variable (scalar to array element link)
+} -body {
+    $widget set x(1) "goodbye "
+    $widget set x(2) "moon"
+    string cat $foo $bar
+} -result {goodbye moon}
+
+test widget_vlink_unset_sa_1 {
+    # unset variable (scalar to array element link) (from parent)
+} -body {
+    unset foo bar
+    set result ""
+    lappend result [$widget eval info exists x(1)]
+    lappend result [$widget eval info exists x(2)]
+    lappend result [$widget eval info exists x]
+} -result {0 0 1}
+
+test widget_vlink_unset_sa_2 {
+    # unset variable (scalar to array element link) (from widget)
+} -body {
+    $widget vlink foo x(1)
+    $widget vlink bar x(2)
+    set foo hi 
+    set bar there
+    $widget eval unset x
+    list [info exists foo] [info exists bar]
+} -result {0 0}
+
+test widget_vlink_write_aa {
+    # write variable (array to array link)
+} -body {
+    $widget vlink x x
+    set x(1) 5
+    $widget get x(1)
+} -result 5
+
+test widget_vlink_read_aa {
+    # read variable (array to array link)
+} -body {
+    $widget set x(1) 10
+    set x(1)
+} -result {10}
+
+test widget_vlink_unset_aa1 {
+    # unset variable (array to array link) (from parent)
+} -body {
+    unset x
+    $widget eval info exists x
+} -result {0}
+
+test widget_vlink_unset_aa2 {
+    # unset variable (array to array link) (from widget)
+} -body {
+    $widget vlink x x
+    set x(1) 5
+    $widget eval {unset x}
+    info exists x
+} -result {0}
 
 # test widget_vlink_write_array {
     # # Test variable links
