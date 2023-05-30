@@ -23,15 +23,18 @@ namespace eval ::wob {
 #
 # Enter the Tcl/Tk event loop, with an interactive command line.
 # Values or codes can be returned to caller with "return"
+#
+# Syntax:
+# mainLoop <$onBlank>
 # 
 # Arguments:
-# onBlank:      "continue" to ignore blank lines, "break" to exit event loop
+# onBlank:      Default "continue" ignores blank lines. "break" exits event loop
 
 proc ::wob::mainLoop {{onBlank continue}} {
     variable userInput
     variable userInputComplete
     if {$onBlank ni {continue break}} {
-        return -code error "Unknown option. Try \"continue\" or \"break\""
+        return -code error "wrong option: want \"continue\" or \"break\""
     }
     # Set up file event for user input
     set oldFileEvent [fileevent stdin readable]
@@ -121,6 +124,12 @@ proc ::wob::exitMainLoop {args} {
 # widget --
 # 
 # TclOO object used for creating GUIs within their own Tcl interpreter.
+#
+# Syntax:
+# widget new <$title>
+#
+# Arguments:
+# title:        Window title for widget. Default "Widget"
 
 oo::class create ::wob::widget {
 # Make $interp available in all methods
