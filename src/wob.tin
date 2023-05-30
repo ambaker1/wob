@@ -225,10 +225,6 @@ method alias {srcCmd targetCmd args} {
 
 method vlink {srcVar targetVar} {
     upvar 1 $srcVar var
-    # Ensure that variables are not array access
-    if {[string match $targetVar *(*)] || [string match $srcVar *(*)]} {
-        return -code error "variable cannot look like array access"
-    }
     # Create traces that link the variable to the widget
     set ns [self namespace]
     trace add variable var read [list ${ns}::my ReadTrace $targetVar]
@@ -242,7 +238,7 @@ method vlink {srcVar targetVar} {
 method WriteTrace {targetVar srcVar key op} {
     upvar 1 $srcVar var
     if {[array exists var]} {
-        my set $targetVar($key) $var($key)
+        my set ${targetVar}($key) $var($key)
     } else {
         my set $targetVar $var
     }
@@ -257,10 +253,10 @@ method ReadTrace {targetVar srcVar key op} {
     }
     if {[array exists var]} {
         # Unset the specific var/key combo if it does not exist in widget
-        if {![my eval [list info exists $targetVar($key)]]} {
+        if {![my eval [list info exists ${targetVar}($key)]]} {
             unset var($key)
         } else {
-            set var($key) [my get $targetVar($key)]
+            set var($key) [my get ${targetVar}($key)]
         }
     } else {
         set var [my get $targetVar]
@@ -270,7 +266,7 @@ method ReadTrace {targetVar srcVar key op} {
 method UnsetTrace {targetVar srcVar key op} {
     upvar 1 $srcVar var
     if {[array exists var]} {
-        my eval [list unset $targetVar($key)]
+        my eval [list unset ${targetVar}($key)]
     } else {
         my eval [list unset $targetVar]
     }
