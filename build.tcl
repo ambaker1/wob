@@ -180,6 +180,15 @@ test widget_vlink_unset_aa2 {
     info exists x
 } -result {0}
 
+test widget_vlink_write_ea {
+    # write variable (array element to array link)
+} -body {
+    $widget vlink x(1) y
+    set x(1) 5
+    set x(2) 6; # this element not linked
+    $widget eval {array get y}
+} -result {1 5}
+
 $widget destroy; # Clean up
 
 # Check number of failed tests
