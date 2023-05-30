@@ -114,8 +114,7 @@ proc ::wob::exitMainLoop {args} {
     variable userInputComplete
     if {$userInputComplete == 0} {
         # For programmatically exiting
-        puts ""
-        flush stdout
+        puts $userInput
     }
     set userInputComplete -1; # Trigger exit
     return
