@@ -14,7 +14,9 @@ namespace eval ::wob {
     variable userInput
     variable userInputComplete
     namespace export mainLoop; # Enter event loop, with user input
+    namespace export exitMainLoop; # Exit main loop programmatically
     namespace export widget; # Widget class
+    namespace export closeWidgets; # Close all widgets
 }
 
 # mainLoop --
@@ -42,8 +44,16 @@ proc ::wob::mainLoop {{onBlank continue}} {
         flush stdout; # For normal Tcl
         # Wait for user input
         vwait ::wob::userInputComplete
+        if {$userInputComplete == 1} {
+            # User input
+            set code [catch {uplevel 1 $userInput} result options]
+        }
+        if {$userInputComplete == -1} {
+            # "exitMainLoop" called (interactive or scripted)
+            set code [catch {uplevel 1 $userInput} result options]
+        }
         # Evaluate user input, but catch for error or other return codes
-        switch [catch {uplevel 1 $userInput} result options] {
+        switch $code {
             0 { # Success. 
                 if {[string trim $userInput] eq ""} {$onBlank}
                 if {$result ne ""} {puts $result}
@@ -51,7 +61,11 @@ proc ::wob::mainLoop {{onBlank continue}} {
             1 { # Error. Print the error message, do not pass error
                 puts [dict get $options -errorinfo]
             }
-            2 { # Return to caller
+            2 { # Return, return to caller
+                # Lower the level of a return code (to account for this level)
+                if {[dict get $options -code] == 2} {
+                    dict incr options -level -1
+                }
                 break
             }
             3 { # Break, throw warning
@@ -77,8 +91,30 @@ proc ::wob::GetUserInput {} {
     # Get user input
     append userInput "[gets stdin]\n"
     if {[info complete $userInput]} {
-        set userInputComplete true
+        set userInputComplete 1
     }
+    return
+}
+
+# exitMainLoop --
+# 
+# Used to programmatically return from mainLoop without going through stdin
+#
+# Syntax:
+# exitMainLoop <$arg ...>
+#
+# Arguments:
+# arg ...       Arguments to append to "return"
+
+proc ::wob::exitMainLoop {args} {
+    variable userInput [list return {*}$args]
+    variable userInputComplete
+    if {$userInputComplete == 0} {
+        # For programmatically exiting
+        puts ""
+        flush stdout
+    }
+    set userInputComplete -1; # Trigger exit
     return
 }
 
