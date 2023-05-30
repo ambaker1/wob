@@ -16,7 +16,7 @@ namespace eval ::wob {
     namespace export mainLoop; # Enter event loop, with user input
     namespace export exitMainLoop; # Exit main loop programmatically
     namespace export widget; # Widget class
-    namespace export closeWidgets; # Close all widgets
+    namespace export closeAllWidgets; # Close all widgets
 }
 
 # mainLoop --
@@ -328,11 +328,11 @@ method get {varName} {
 
 }; # end of class definition
 
-# closeWidgets --
+# closeAllWidgets --
 #
 # Close all widgets
 
-proc ::wob::closeWidgets {} {
+proc ::wob::closeAllWidgets {} {
     foreach widget [info class instances ::wob::widget] {
         $widget destroy
     }
@@ -341,3 +341,4 @@ proc ::wob::closeWidgets {} {
 
 # Finally, provide the package
 package provide wob @VERSION@
+ 
