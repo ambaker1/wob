@@ -1,10 +1,8 @@
-set wob_version 0.1.3
-package require tin 0.4
+set wob_version 0.2
+package require tin 0.6
 set config ""
 dict set config VERSION $wob_version
-tin bake src/wob.tin build/wob.tcl $config
-tin bake src/pkgIndex.tin build/pkgIndex.tcl $config
-tin bake src/install.tin build/install.tcl $config
+tin bake src build $config
 
 # Test wob (this is a manual test)
 source build/wob.tcl
