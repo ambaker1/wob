@@ -5,14 +5,135 @@ dict set config VERSION $wob_version
 tin bake src build $config
 
 # Test wob (this is a manual test)
-source build/wob.tcl
-namespace import wob::*
+set dir build
+source build/pkgIndex.tcl
+tin import wob -exact $wob_version
+tin import tcltest
 
-# Test 1 (get open file, verify that it prints the right thing to command line)
-set widget [widget new]
-set filename [$widget eval tk_getOpenFile]
+# Close widgets
+test createWidgets {
+    # Create widgets
+} -body {
+    set w1 [widget new]
+    set w2 [widget new]
+    set w3 [widget new]
+    llength [info class instances ::wob::widget]
+} -result {3}
+
+test closeAllWidgets {
+    # Close all widgets
+} -body {
+    closeAllWidgets
+    llength [info class instances ::wob::widget]
+} -result {0}
+
+# Test out exitMainLoop
+
+test widgetTitle {
+    # Ensures that the "title" argument works
+} -body {
+    set widget [widget new foo]
+    $widget eval {wm title .}
+} -result {foo}
 $widget destroy
-puts $filename
+
+test exitMainLoop_1 {
+    # Try out mainLoop and exitMainLoop
+} -body {
+    after idle {exitMainLoop}
+    mainLoop
+} -result {}
+
+test exitMainLoop_2 {
+    # Advanced applications of exitMainLoop
+} -body {
+    set result ""; # initialize
+    # Return value
+    after idle {exitMainLoop foo}
+    while {1} {
+        lappend result [mainLoop]
+        after idle {exitMainLoop -code break}; # Return break
+    }
+    # Return "return"
+    proc foo {} {
+        mainLoop
+        return
+    }
+    after idle {exitMainLoop -code return bar}
+    lappend result [foo]
+    set result
+} -result {foo bar}
+
+test widget_vlink_write {
+    # Test variable links
+} -body {
+    set widget [widget new]
+    $widget vlink x x
+    set x 10
+    $widget get x
+} -result {10}
+
+test widget_vlink_read {
+    # Test variable links
+} -body {
+    $widget set x 5
+    set x
+} -result {5}
+
+test widget_vlink_unset_1 {
+    # Test variable links
+} -body {
+    unset x
+    $widget eval info exists x
+} -result {0}
+
+test widget_vlink_unset_2 {
+    # Test variable links
+} -body {
+    $widget vlink x x
+    set x 5
+    $widget eval {unset x}
+    info exists x
+} -result {0}
+
+
+
+# test widget_vlink_write_array {
+    # # Test variable links
+# } -body {
+    # set widget [widget new]
+    # $widget vlink x x
+    # set x 10
+    # $widget get x
+# } -result {10}
+
+# test widget_vlink_read {
+    # # Test variable links
+# } -body {
+    # $widget set x 5
+    # set x
+# } -result {5}
+
+# test widget_vlink_unset {
+    # # Test variable links
+# } -body {
+    # unset x
+    # $widget eval info exists x
+# } -result {0}
+
+
+# Check number of failed tests
+set nFailed $::tcltest::numTests(Failed)
+
+# Clean up and report on tests
+cleanupTests
+
+# If tests failed, return error
+if {$nFailed > 0} {
+    error "$nFailed tests failed"
+}
+
+exit
 
 # Test 2 (basic prompt, menu selection
 set widget [widget new]
