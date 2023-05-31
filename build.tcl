@@ -1,4 +1,4 @@
-set wob_version 0.2
+set wob_version 0.2.1
 package require tin 0.6
 set config ""
 dict set config VERSION $wob_version
@@ -110,7 +110,7 @@ test widget_vlink_unset_ss2 {
     info exists x
 } -result {0}
 
-test widget_vlink_write_sa {
+test widget_vlink_write_se {
     # write variable (scalar to array element link)
 } -body {
     $widget vlink foo x(1)
@@ -120,7 +120,7 @@ test widget_vlink_write_sa {
     $widget eval {string cat $x(1) $x(2)}
 } -result {hello world}
 
-test widget_vlink_read_sa {
+test widget_vlink_read_se {
     # read variable (scalar to array element link)
 } -body {
     $widget set x(1) "goodbye "
@@ -128,7 +128,7 @@ test widget_vlink_read_sa {
     string cat $foo $bar
 } -result {goodbye moon}
 
-test widget_vlink_unset_sa_1 {
+test widget_vlink_unset_se_1 {
     # unset variable (scalar to array element link) (from parent)
 } -body {
     unset foo bar
@@ -138,7 +138,7 @@ test widget_vlink_unset_sa_1 {
     lappend result [$widget eval info exists x]
 } -result {0 0 1}
 
-test widget_vlink_unset_sa_2 {
+test widget_vlink_unset_se_2 {
     # unset variable (scalar to array element link) (from widget)
 } -body {
     $widget vlink foo x(1)
@@ -149,30 +149,30 @@ test widget_vlink_unset_sa_2 {
     list [info exists foo] [info exists bar]
 } -result {0 0}
 
-test widget_vlink_write_aa {
-    # write variable (array to array link)
+test widget_vlink_write_ee {
+    # write variable (array element to array element link)
 } -body {
-    $widget vlink x x
+    $widget vlink x(1) x(1)
     set x(1) 5
     $widget get x(1)
 } -result 5
 
-test widget_vlink_read_aa {
-    # read variable (array to array link)
+test widget_vlink_read_ee {
+    # read variable (array element to array element link)
 } -body {
     $widget set x(1) 10
     set x(1)
 } -result {10}
 
-test widget_vlink_unset_aa1 {
-    # unset variable (array to array link) (from parent)
+test widget_vlink_unset_ee1 {
+    # unset variable (array element to array element link) (from parent)
 } -body {
     unset x
     $widget eval info exists x
 } -result {0}
 
-test widget_vlink_unset_aa2 {
-    # unset variable (array to array link) (from widget)
+test widget_vlink_unset_ee2 {
+    # unset variable (array element to array element link) (from widget)
 } -body {
     $widget vlink x x
     set x(1) 5
@@ -180,14 +180,37 @@ test widget_vlink_unset_aa2 {
     info exists x
 } -result {0}
 
-test widget_vlink_write_ea {
-    # write variable (array element to array link)
+test widget_vlink_write_es {
+    # write variable (array element to scalar link)
 } -body {
     $widget vlink x(1) y
     set x(1) 5
     set x(2) 6; # this element not linked
-    $widget eval {array get y}
-} -result {1 5}
+    $widget get y
+} -result {5}
+
+test widget_vlink_read_es {
+    # read variable (array element to scalar link)
+} -body {
+    $widget set y 10
+    array get x
+} -result {1 10 2 6}
+
+test widget_vlink_unset_es1 {
+    # unset variable (array element to scalar link) (from parent)
+} -body {
+    unset x
+    $widget eval info exists y
+} -result {0}
+
+test widget_vlink_unset_es2 {
+    # unset variable (array element to scalar link) (from widget)
+} -body {
+    $widget vlink x(1) y
+    set x(1) 5
+    $widget eval {unset y}
+    list [info exists x(1)] [info exists x]
+} -result {0 1}
 
 $widget destroy; # Clean up
 
