@@ -225,13 +225,20 @@ method alias {srcCmd targetCmd args} {
 
 method vlink {srcVar targetVar} {
     upvar 1 $srcVar var
+    # Ensure that srcVar is scalar (or array element)
     if {![info exists var]} {
-        set var ""; # Forces srcVar to be a scalar (and to exist)
+        set var ""; 
     } elseif {[array exists var]} {
         return -code error "srcVar cannot be array"
     }
-    my set $targetVar $var; # Initialize targetVar
-    # Create traces that link the variable to the widget
+    # Ensure that targetVar is not array (throw error if the case)
+    if {[my eval [list info exists $targetVar]]} {
+        if {[my eval [list array exists $targetVar]]} {
+            return -code error "targetVar cannot be array"
+        }
+    }
+    # Initialize targetVar and traces that link the variable to the widget
+    my set $targetVar $var
     my Unlink var $targetVar; # Prevent duplicate traces
     trace add variable var read [list ::wob::ReadTrace [self] $targetVar]
     trace add variable var write [list ::wob::WriteTrace [self] $targetVar]
@@ -350,7 +357,7 @@ proc ::wob::WriteTrace {widget targetVar name1 name2 args} {
 proc ::wob::ReadTrace {widget targetVar name1 name2 args} {
     upvar 1 $name1 var
     # Unset the srcVar if the targetVar was unset.
-    if {[$widget eval [list info exists $targetVar]]} {
+    if {![$widget eval [list info exists $targetVar]]} {
         if {[array exists var]} {
             unset var($name2)
         } else {
