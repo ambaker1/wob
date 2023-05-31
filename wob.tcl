@@ -213,63 +213,55 @@ method alias {srcCmd targetCmd args} {
 # vlink --
 #
 # Link a variable in the parent interpreter to one in the child interpreter
-# Must be 
+# Initializes srcVar (and targetVar) as blank if it does not exist.
 #
 # Syntax:
 # $widget vlink $srcVar $targetVar
 #
 # Arguments:
 # widget        Widget object name
-# srcVar        Variable in source interpreter
-# targetVar     Variable in widget interpreter
+# srcVar        Variable in source interpreter (must be scalar or array element)
+# targetVar     Variable in widget interpreter (must be scalar or array element)
 
 method vlink {srcVar targetVar} {
     upvar 1 $srcVar var
-    # Create traces that link the variable to the widget
-    set ns [self namespace]
-    trace add variable var read [list ${ns}::my ReadTrace $targetVar]
-    trace add variable var write [list ${ns}::my WriteTrace $targetVar]
-    trace add variable var unset [list ${ns}::my UnsetTrace $targetVar]
+    # Ensure that srcVar is scalar (or array element)
+    if {![info exists var]} {
+        set var ""; 
+    } elseif {[array exists var]} {
+        return -code error "srcVar cannot be array"
+    }
+    # Ensure that targetVar is not array (throw error if the case)
+    if {[my eval [list info exists $targetVar]]} {
+        if {[my eval [list array exists $targetVar]]} {
+            return -code error "targetVar cannot be array"
+        }
+    }
+    # Initialize targetVar and traces that link the variable to the widget
+    my set $targetVar $var
+    my Unlink var $targetVar; # Prevent duplicate traces
+    trace add variable var read [list ::wob::ReadTrace [self] $targetVar]
+    trace add variable var write [list ::wob::WriteTrace [self] $targetVar]
+    trace add variable var unset [list ::wob::UnsetTrace [self] $targetVar]
     return
 }
 
-# Private methods for vlink variable traces
+# Unlink --
+#
+# Unlinks srcVar and targetVar (used internally)
+#
+# Syntax:
+# my Unlink $srcVar $targetVar
+#
+# Arguments:
+# srcVar        Variable in source interpreter (must be scalar or array element)
+# targetVar     Variable in widget interpreter (must be scalar or array element)
 
-method WriteTrace {targetVar srcVar key op} {
+method Unlink {srcVar targetVar} {
     upvar 1 $srcVar var
-    if {[array exists var]} {
-        my set ${targetVar}($key) $var($key)
-    } else {
-        my set $targetVar $var
-    }
-}
-
-method ReadTrace {targetVar srcVar key op} {
-    upvar 1 $srcVar var
-    # Unset the srcVar if the targetVar was unset.
-    if {![my eval [list info exists $targetVar]]} {
-        unset var
-        return
-    }
-    if {[array exists var]} {
-        # Unset the specific var/key combo if it does not exist in widget
-        if {![my eval [list info exists ${targetVar}($key)]]} {
-            unset var($key)
-        } else {
-            set var($key) [my get ${targetVar}($key)]
-        }
-    } else {
-        set var [my get $targetVar]
-    }
-}
-
-method UnsetTrace {targetVar srcVar key op} {
-    upvar 1 $srcVar var
-    if {[array exists var]} {
-        my eval [list unset ${targetVar}($key)]
-    } else {
-        my eval [list unset $targetVar]
-    }
+    trace remove variable var read [list ::wob::ReadTrace [self] $targetVar]
+    trace remove variable var write [list ::wob::WriteTrace [self] $targetVar]
+    trace remove variable var unset [list ::wob::UnsetTrace [self] $targetVar]
 }
 
 # interp --
@@ -323,6 +315,80 @@ method get {varName} {
 
 }; # end of class definition
 
+# Private procs for vlink variable traces
+
+# WriteTrace --
+#
+# Variable trace on variable in parent interpreter that also sets corresponding
+# variable in the widget interpreter on write.
+#
+# Syntax:
+# WriteTrace $widget $targetVar $name1 $name2
+#
+# Arguments:
+# widget        Widget object name
+# targetVar     Variable name in widget interpreter
+# name1         Variable name in parent interpreter
+# name2         Array key name if name1 is array.
+
+proc ::wob::WriteTrace {widget targetVar name1 name2 args} {
+    upvar 1 $name1 var
+    if {[array exists var]} {
+        $widget set $targetVar $var($name2)
+    } else {
+        $widget set $targetVar $var
+    }
+}
+
+# ReadTrace --
+# 
+# Variable trace on variable in parent interpreter that retrieves value from
+# corresponding variable in the widget interpreter on read.
+#
+# Syntax:
+# ReadTrace $widget $targetVar $name1 $name2
+#
+# Arguments:
+# widget        Widget object name
+# targetVar     Variable name in widget interpreter
+# name1         Variable name in parent interpreter
+# name2         Array key name if name1 is array.
+
+proc ::wob::ReadTrace {widget targetVar name1 name2 args} {
+    upvar 1 $name1 var
+    # Unset the srcVar if the targetVar was unset.
+    if {![$widget eval [list info exists $targetVar]]} {
+        if {[array exists var]} {
+            unset var($name2)
+        } else {
+            unset var
+        }
+        return
+    }
+    # Set the srcVar to the current value of the targetVar
+    if {[array exists var]} {
+        set var($name2) [$widget get $targetVar]
+    } else {
+        set var [$widget get $targetVar]
+    }
+}
+
+# UnsetTrace --
+# 
+# Variable trace on variable in parent interpreter that unsets the corresponding
+# variable in the widget interpreter on unset.
+#
+# Syntax:
+# UnsetTrace $widget $targetVar
+#
+# Arguments:
+# widget        Widget object name
+# targetVar     Variable name in widget interpreter
+
+proc ::wob::UnsetTrace {widget targetVar args} {
+    $widget eval [list unset $targetVar]
+}
+
 # closeAllWidgets --
 #
 # Close all widgets
@@ -335,5 +401,5 @@ proc ::wob::closeAllWidgets {} {
 }
 
 # Finally, provide the package
-package provide wob 0.2
+package provide wob 0.2.1
  
