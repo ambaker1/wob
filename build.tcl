@@ -9,7 +9,6 @@ set dir build
 source build/pkgIndex.tcl
 tin import wob -exact $wob_version
 tin import tcltest
-tin import flytrap
 
 # Ensure that widgets are initialized properly
 test widget {
