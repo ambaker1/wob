@@ -9,6 +9,7 @@ set dir build
 source build/pkgIndex.tcl
 tin import wob -exact $wob_version
 tin import tcltest
+tin import flytrap
 
 # Ensure that widgets are initialized properly
 test widget {
@@ -168,17 +169,17 @@ test widget_vlink_unset_ee1 {
     # unset variable (array element to array element link) (from parent)
 } -body {
     unset x
-    $widget eval info exists x
-} -result {0}
+    $widget eval {list [info exists x(1)] [info exists x]}
+} -result {0 1}
 
 test widget_vlink_unset_ee2 {
     # unset variable (array element to array element link) (from widget)
 } -body {
-    $widget vlink x x
+    $widget vlink x(1) x(1)
     set x(1) 5
     $widget eval {unset x}
-    info exists x
-} -result {0}
+    list [info exists x(1)] [info exists x]
+} -result {0 1}
 
 test widget_vlink_write_es {
     # write variable (array element to scalar link)
