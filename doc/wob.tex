@@ -11,14 +11,14 @@
 \renewcommand{\^}[1]{\textsuperscript{#1}}
 \renewcommand{\_}[1]{\textsubscript{#1}}
 
-\title{\Huge Tcl Widget Objects\\\small Version \version}
+\title{\Huge Tcl Widget Objects (wob)\\\small Version \version}
 \author{Alex Baker\\\small\url{https://github.com/ambaker1/wob}}
 \date{\small\today}
 \begin{document}
 \maketitle
 \begin{abstract}
 \begin{center}
-This package ties Tk widgets to their own TclOO objects and separate Tcl interpreters.
+This package ties Tk widgets to their own TclOO objects and separate Tcl interpreters. Additionally, ``wob'' provides an interactive event loop with command line.
 \end{center}
 \end{abstract}
 
@@ -95,12 +95,13 @@ hello world
 \subsection{Widget Variable Links}
 By default, variables in the widget interpreter are completely separate from the main Tcl interpreter. 
 The method \methodlink[0]{widget}{vlink} creates a link between variables in the main interpreter and the widget interpreter so that their values are linked.
+If \texttt{\$srcVar} does not exist, it will be initialized as blank.
 \begin{syntax}
    	\method{widget}{vlink} \$srcVar \$targetVar
 \end{syntax}
 \begin{args}
-   	\$srcVar & Variable in parent interpreter. \\
-   	\$targetVar & Variable in widget interpreter. 
+   	\$srcVar & Variable in parent interpreter (scalar or array element). \\
+   	\$targetVar & Variable in widget interpreter (scalar or array element). 
 \end{args}
 \begin{example}{Linking widget variables}
 \begin{lstlisting}
@@ -114,7 +115,6 @@ puts [$widget get x]
 hello world
 \end{lstlisting}
 \end{example}
-Note: If \texttt{\$srcVar} is an array or array element, \texttt{\$targetVar} will be interpreted as the array name.
 \subsection{Widget Command Aliases}
 By default, the widget interpreter does not interface directly with the main Tcl interpreter. 
 The method \methodlink[0]{widget}{alias} creates an alias command in the widget interpreter to access a command in the main interpreter.
