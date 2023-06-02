@@ -50,6 +50,21 @@ test mainLoop_scope {
     set x
 } -result {1}
 
+test mainLoop_interactive {
+    # Check the values of the variable "::wob::interactive"
+} -body {
+    global result
+    set result ""
+    lappend result $::wob::interactive
+    after idle {
+        global result
+        lappend result $::wob::interactive
+        exitMainLoop
+    }
+    mainLoop
+    lappend result $::wob::interactive
+} -result {0 1 0}
+
 # Test out exitMainLoop
 test exitMainLoop_1 {
     # Try out mainLoop and exitMainLoop
