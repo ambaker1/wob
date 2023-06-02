@@ -1,5 +1,5 @@
 package require tin 0.4
-set dir [tin mkdir -force wob 0.2.3]
+set dir [tin mkdir -force wob 0.2.4]
 file copy README.md $dir 
 file copy LICENSE $dir 
 file copy wob.tcl $dir 
