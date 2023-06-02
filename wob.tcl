@@ -43,13 +43,14 @@ proc ::wob::mainLoop {{onBlank continue}} {
     }
     # Enter interactive mainLoop
     set oldFileEvent [fileevent stdin readable]; # Save old file event
+    set oldInteractive $interactive; # Save old "interactive" status
     fileevent stdin readable ::wob::GetUserInput; # File event for user input
     set interactive 1
     while {1} {
         # Initialize
         set userInput ""
         set userInputComplete 0
-        puts -nonewline "> " 
+        puts -nonewline "> "
         flush stdout; # For normal Tcl
         # Wait for user input
         vwait ::wob::userInputComplete
@@ -87,7 +88,7 @@ proc ::wob::mainLoop {{onBlank continue}} {
     }
     # Exit interactive mainLoop
     fileevent stdin readable $oldFileEvent; # Restore old file event
-    set interactive 0
+    set interactive $oldInteractive
     # Return user specified code and result
     return -options $options $result
 }

@@ -59,11 +59,19 @@ test mainLoop_interactive {
     after idle {
         global result
         lappend result $::wob::interactive
+        after idle {
+            global result
+            lappend result $::wob::interactive
+            exitMainLoop
+        }
+        puts "mainLoop"
+        mainLoop
+        lappend result $::wob::interactive
         exitMainLoop
     }
     mainLoop
     lappend result $::wob::interactive
-} -result {0 1 0}
+} -result {0 1 1 1 0}
 
 # Test out exitMainLoop
 test exitMainLoop_1 {
