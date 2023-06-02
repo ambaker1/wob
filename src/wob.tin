@@ -37,15 +37,13 @@ proc ::wob::mainLoop {{onBlank continue}} {
     variable userInput
     variable userInputComplete
     variable interactive
+    # Validate input
     if {$onBlank ni {continue break}} {
         return -code error "wrong option: want \"continue\" or \"break\""
     }
-    if {$interactive} {
-        return -code error "already in mainLoop"
-    }
-    # Set up file event for user input
-    set oldFileEvent [fileevent stdin readable]
-    fileevent stdin readable ::wob::GetUserInput
+    # Enter interactive mainLoop
+    set oldFileEvent [fileevent stdin readable]; # Save old file event
+    fileevent stdin readable ::wob::GetUserInput; # File event for user input
     set interactive 1
     while {1} {
         # Initialize
@@ -87,9 +85,10 @@ proc ::wob::mainLoop {{onBlank continue}} {
             }
         }
     }
-    # Restore old file event and return user specified code and result
-    fileevent stdin readable $oldFileEvent
+    # Exit interactive mainLoop
+    fileevent stdin readable $oldFileEvent; # Restore old file event
     set interactive 0
+    # Return user specified code and result
     return -options $options $result
 }
 
