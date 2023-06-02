@@ -1,4 +1,4 @@
-set wob_version 0.2.1
+set wob_version 0.2.2
 package require tin 0.6
 set config ""
 dict set config VERSION $wob_version
