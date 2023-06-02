@@ -1,4 +1,4 @@
-set wob_version 0.2.1
+set wob_version 0.2.2
 package require tin 0.6
 set config ""
 dict set config VERSION $wob_version
@@ -49,6 +49,20 @@ test mainLoop_scope {
     mainLoop
     set x
 } -result {1}
+
+test mainLoop_no_nest {
+    # Ensure that a mainLoop cannot be called within a mainLoop
+} -body {
+    set result ""
+    after idle {
+        puts ""
+        set ::wob::userInput "catch {mainLoop} result"
+        set ::wob::userInputComplete 1
+        after idle exitMainLoop
+    }
+    mainLoop
+    set result
+} -result {already in mainLoop}
 
 # Test out exitMainLoop
 test exitMainLoop_1 {
