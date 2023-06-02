@@ -248,29 +248,11 @@ method vlink {srcVar targetVar} {
     }
     # Initialize targetVar and traces that link the variable to the widget
     my set $targetVar $var
-    my Unlink var $targetVar; # Prevent duplicate traces
+    ::wob::Unlink var [self] $targetVar; # Prevent duplicate traces
     trace add variable var read [list ::wob::ReadTrace [self] $targetVar]
     trace add variable var write [list ::wob::WriteTrace [self] $targetVar]
     trace add variable var unset [list ::wob::UnsetTrace [self] $targetVar]
     return
-}
-
-# Unlink --
-#
-# Unlinks srcVar and targetVar (used internally)
-#
-# Syntax:
-# my Unlink $srcVar $targetVar
-#
-# Arguments:
-# srcVar        Variable in source interpreter (must be scalar or array element)
-# targetVar     Variable in widget interpreter (must be scalar or array element)
-
-method Unlink {srcVar targetVar} {
-    upvar 1 $srcVar var
-    trace remove variable var read [list ::wob::ReadTrace [self] $targetVar]
-    trace remove variable var write [list ::wob::WriteTrace [self] $targetVar]
-    trace remove variable var unset [list ::wob::UnsetTrace [self] $targetVar]
 }
 
 # interp --
@@ -326,6 +308,25 @@ method get {varName} {
 
 # Private procs for vlink variable traces
 
+# Unlink --
+#
+# Unlinks srcVar and targetVar from a widget
+#
+# Syntax:
+# Unlink $srcVar $widget $targetVar
+#
+# Arguments:
+# srcVar        Variable in source interpreter (must be scalar or array element)
+# widget        Widget object name
+# targetVar     Variable in widget interpreter (must be scalar or array element)
+
+proc ::wob::Unlink {srcVar widget targetVar} {
+    upvar 1 $srcVar var
+    trace remove variable var read [list ::wob::ReadTrace $widget $targetVar]
+    trace remove variable var write [list ::wob::WriteTrace $widget $targetVar]
+    trace remove variable var unset [list ::wob::UnsetTrace $widget $targetVar]
+}
+
 # WriteTrace --
 #
 # Variable trace on variable in parent interpreter that also sets corresponding
@@ -342,6 +343,15 @@ method get {varName} {
 
 proc ::wob::WriteTrace {widget targetVar name1 name2 args} {
     upvar 1 $name1 var
+    # Unlink variable if $widget no longer exists.
+    if {![info object isa object $widget]} {
+        if {[array exists var]} {
+            Unlink var($name2) $widget $targetVar
+        } else {
+            Unlink var $widget $targetVar
+        }
+        return
+    }
     if {[array exists var]} {
         $widget set $targetVar $var($name2)
     } else {
@@ -365,6 +375,15 @@ proc ::wob::WriteTrace {widget targetVar name1 name2 args} {
 
 proc ::wob::ReadTrace {widget targetVar name1 name2 args} {
     upvar 1 $name1 var
+    # Unlink variable if $widget no longer exists.
+    if {![info object isa object $widget]} {
+        if {[array exists var]} {
+            Unlink var($name2) $widget $targetVar
+        } else {
+            Unlink var $widget $targetVar
+        }
+        return
+    }
     # Unset the srcVar if the targetVar was unset.
     if {![$widget eval [list info exists $targetVar]]} {
         if {[array exists var]} {
