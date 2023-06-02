@@ -1,4 +1,4 @@
-set wob_version 0.2.3
+set wob_version 0.2.4
 package require tin 0.6
 set config ""
 dict set config VERSION $wob_version
@@ -236,6 +236,62 @@ test widget_vlink_unset_es2 {
 } -result {0 1}
 
 $widget destroy; # Clean up
+
+test widget_unlink1 {
+    # ensure that destroying the widget also destroys vlinks
+} -body {
+    set a 5
+    set widget [widget new]
+    $widget vlink a a
+    $widget destroy
+    set a
+} -result {5}
+
+test widget_unlink2 {
+    # ensure that destroying the widget also destroys vlinks
+} -body {
+    set widget [widget new]
+    $widget vlink a a
+    $widget destroy
+    set a 3
+} -result {3}
+
+test widget_unlink3 {
+    # ensure that destroying the widget also destroys vlinks
+} -body {
+    set widget [widget new]
+    $widget vlink a a
+    $widget destroy
+    unset x
+} -result {}
+
+test widget_unlink1_e {
+    # ensure that destroying the widget also destroys vlinks (array element)
+} -body {
+    set x(1) 5
+    set widget [widget new]
+    $widget vlink x(1) y
+    $widget destroy
+    set x(1)
+} -result {5}
+
+test widget_unlink2_e {
+    # ensure that destroying the widget also destroys vlinks (array element)
+} -body {
+    set widget [widget new]
+    $widget vlink x(1) y
+    $widget destroy
+    set x(1) 3
+} -result {3}
+
+test widget_unlink3_e {
+    # ensure that destroying the widget also destroys vlinks (array element)
+} -body {
+    set widget [widget new]
+    $widget vlink x(1) y
+    $widget destroy
+    unset x
+} -result {}
 
 # Check number of failed tests
 set nFailed $::tcltest::numTests(Failed)
