@@ -50,6 +50,20 @@ test mainLoop_scope {
     set x
 } -result {1}
 
+test mainLoop_no_nest {
+    # Ensure that a mainLoop cannot be called within a mainLoop
+} -body {
+    set result ""
+    after idle {
+        puts ""
+        set ::wob::userInput "catch {mainLoop} result"
+        set ::wob::userInputComplete 1
+        after idle exitMainLoop
+    }
+    mainLoop
+    set result
+} -result {already in mainLoop}
+
 # Test out exitMainLoop
 test exitMainLoop_1 {
     # Try out mainLoop and exitMainLoop
