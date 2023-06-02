@@ -18,7 +18,7 @@
 \maketitle
 \begin{abstract}
 \begin{center}
-This package ties Tk widgets to their own TclOO objects and separate Tcl interpreters. Additionally, ``wob'' provides an interactive event loop with command line.
+This package ties Tk widgets to their own TclOO objects and separate Tcl interpreters. Additionally, ``wob'' provides \textit{mainLoop}: a Tcl/Tk event loop with an interactive command line.
 \end{center}
 \end{abstract}
 
@@ -138,6 +138,18 @@ The command \cmdlink{mainLoop} is provided as a method to enter the event loop f
 \begin{args}
    	\$onBlank & What to do after user enters a blank line: ``continue'' will continue the interactive event loop, and ``break'' will exit the interactive event loop. Default ``continue''.
 \end{args}
+
+\begin{example}{Entering the event loop}
+\begin{lstlisting}
+puts "Main Loop:"
+mainLoop
+\end{lstlisting}
+\tcblower
+\begin{lstlisting}
+Main Loop:
+> |
+\end{lstlisting}
+\end{example}
 
 \subsection{Exiting the Event Loop}
 To exit the event loop and continue with a script, simply enter ``return'' on the command line, or use the command \cmdlink{exitMainLoop}, which can also be scheduled as an event with the Tcl \textit{after} command.
