@@ -94,19 +94,19 @@ hello world
 \clearpage
 \subsection{Widget Variable Links}
 By default, variables in the widget interpreter are completely separate from the main Tcl interpreter. 
-The method \methodlink[0]{widget}{vlink} creates a link between variables in the main interpreter and the widget interpreter so that their values are linked.
+The method \methodlink[0]{widget}{upvar} creates a link between variables in the main interpreter and the widget interpreter so that their values are linked.
 If \texttt{\$srcVar} does not exist, it will be initialized as blank.
 \begin{syntax}
-   	\method{widget}{vlink} \$srcVar \$targetVar
+   	\method{widget}{upvar} \$srcVar \$myVar <\$srcVar \$myVar ...>
 \end{syntax}
 \begin{args}
    	\$srcVar & Variable in parent interpreter (scalar or array element). \\
-   	\$targetVar & Variable in widget interpreter (scalar or array element). 
+   	\$myVar & Variable in widget interpreter (scalar or array element). 
 \end{args}
 \begin{example}{Linking widget variables}
 \begin{lstlisting}
 set widget [widget new]
-$widget vlink x x
+$widget upvar x x
 set x {hello world}
 puts [$widget get x]
 \end{lstlisting}
