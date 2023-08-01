@@ -219,20 +219,25 @@ method alias {srcCmd targetCmd args} {
     $interp alias $srcCmd $targetCmd {*}$args
 }
 
-# vlink --
+# upvar --
 #
 # Link a variable in the parent interpreter to one in the child interpreter
-# Initializes srcVar (and targetVar) as blank if it does not exist.
+# Initializes srcVar (and myVar) as blank if it does not exist.
 #
 # Syntax:
-# $widget vlink $srcVar $targetVar
+# $widget upvar $srcVar $myVar <$srcVar $myVar ...>
 #
 # Arguments:
 # widget        Widget object name
 # srcVar        Variable in source interpreter (must be scalar or array element)
-# targetVar     Variable in widget interpreter (must be scalar or array element)
+# myVar         Variable in widget interpreter (must be scalar or array element)
 
-method vlink {srcVar targetVar} {
+method upvar {srcVar myVar args} {
+    # Check arity
+    if {[llength $args] % 2 == 1} {
+        return -code error "wrong # args: should be\
+                \"widget upvar srcVar myVar ?srcVar myVar ...?\"" 
+    }
     upvar 1 $srcVar var
     # Ensure that srcVar is scalar (or array element)
     if {![info exists var]} {
@@ -240,18 +245,22 @@ method vlink {srcVar targetVar} {
     } elseif {[array exists var]} {
         return -code error "srcVar cannot be array"
     }
-    # Ensure that targetVar is not array (throw error if the case)
-    if {[my eval [list info exists $targetVar]]} {
-        if {[my eval [list array exists $targetVar]]} {
-            return -code error "targetVar cannot be array"
+    # Ensure that myVar is not array (throw error if the case)
+    if {[my eval [list info exists $myVar]]} {
+        if {[my eval [list array exists $myVar]]} {
+            return -code error "myVar cannot be array"
         }
     }
     # Initialize targetVar and traces that link the variable to the widget
-    my set $targetVar $var
-    ::wob::Unlink var [self] $targetVar; # Prevent duplicate traces
-    trace add variable var read [list ::wob::ReadTrace [self] $targetVar]
-    trace add variable var write [list ::wob::WriteTrace [self] $targetVar]
-    trace add variable var unset [list ::wob::UnsetTrace [self] $targetVar]
+    my set $myVar $var
+    ::wob::Unlink var [self] $myVar; # Prevent duplicate traces
+    trace add variable var read [list ::wob::ReadTrace [self] $myVar]
+    trace add variable var write [list ::wob::WriteTrace [self] $myVar]
+    trace add variable var unset [list ::wob::UnsetTrace [self] $myVar]
+    # Tail recursion
+    if {[llength $args] > 0} {
+        tailcall my upvar {*}$args
+    }
     return
 }
 
@@ -306,7 +315,7 @@ method get {varName} {
 
 }; # end of class definition
 
-# Private procs for vlink variable traces
+# Private procs for upvar method variable traces
 
 # Unlink --
 #
