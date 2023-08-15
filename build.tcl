@@ -1,6 +1,6 @@
 # Build and test file for wob.
-set wob_version 0.3
-package require tin 0.6
+set wob_version 1.0
+package require tin 0.8
 set config ""
 dict set config VERSION $wob_version
 tin bake src build $config
