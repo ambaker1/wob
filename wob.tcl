@@ -438,5 +438,5 @@ proc ::wob::closeAllWidgets {} {
 }
 
 # Finally, provide the package
-package provide wob 1.0
+package provide wob 1.0.1
  
