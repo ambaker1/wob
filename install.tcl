@@ -1,6 +1,3 @@
-package require tin 1.0
-set dir [tin mkdir -force wob 1.0.1]
-file copy README.md $dir 
-file copy LICENSE $dir 
-file copy wob.tcl $dir 
-file copy pkgIndex.tcl $dir
+package require tin 2a0
+set dir [tin mkdir -force wob 1.1a0]
+file copy README.md LICENSE wob.tcl pkgIndex.tcl $dir
